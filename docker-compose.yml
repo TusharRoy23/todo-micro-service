@@ -1,0 +1,114 @@
+version: '3'
+services: 
+    redis-server:
+      image: redis
+      container_name: redis-microservice-server
+      ports: 
+        - "6379:6379"
+      volumes: 
+        - ./redis-service/config/redis.conf:/redis.conf
+        # - ./redis-data:/redis.conf
+      command: [ "redis-server", "/redis.conf" ]
+      # networks: 
+      #   - redis-net
+    db:
+      image: postgres
+      restart: always
+      environment: 
+        - POSTGRES_USER=${DATABASE_USER}
+        - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
+        - POSTGRES_CLIENT_DB=${CLIENT_DB_NAME}
+        - POSTGRES_ADMIN_DB=${ADMIN_DB_NAME}
+      container_name: nest-micro-service-postgres-db
+      volumes:
+        - ./pgdata:/var/lib/postgresql/data
+      # networks: 
+      #   - redis-net
+    client-service:
+      build: 
+        context: ./client-service
+        dockerfile: ./Dockerfile
+      image: tusharchy/client-micro-service:latest
+      environment: 
+        - DB_TYPE=${DB_TYPE}
+        - DB_USERNAME=${DB_USERNAME}
+        - DB_PASSWORD=${DB_PASSWORD}
+        - POSTGRES_HOST=${POSTGRES_HOST}
+        - POSTGRES_USER=${DATABASE_USER}
+        - POSTGRES_PASS=${DATABASE_PASSWORD}
+        - POSTGRES_CLIENT_DB=${CLIENT_DB_NAME}
+        - POSTGRES_SYNC=false
+        - POSTGRES_PORT=${POSTGRES_PORT}
+        - APP_PORT=${APP_PORT}
+        - JWT_ACCESS_TOKEN_EXPIRATION_TIME=${JWT_ACCESS_TOKEN_EXPIRATION_TIME}
+        - JWT_ACCESS_TOKEN_SECRET=${JWT_ACCESS_TOKEN_SECRET}
+        - JWT_REFRESH_TOKEN_SECRET=${JWT_REFRESH_TOKEN_SECRET}
+        - JWT_REFRESH_TOKEN_EXPIRATION_TIME=${JWT_REFRESH_TOKEN_EXPIRATION_TIME}
+        - REDIS_HOST=redis-server
+        - REDIS_PORT=6379
+      ports: 
+        - "3000:3000" # expose-to-the-world : only-in-the-docker
+      container_name: client-micro-service-app
+      depends_on: 
+        - db
+        # - redis-server
+      volumes: 
+        - ./client-service:/app
+        - /app/node_modules
+      # networks: 
+      #   - redis-net
+    admin-service:
+      build: 
+        context: ./admin-service
+        dockerfile: ./Dockerfile
+      image: tusharchy/admin-micro-service:latest
+      environment: 
+        - DB_TYPE=${DB_TYPE}
+        - DB_USERNAME=${DB_USERNAME}
+        - DB_PASSWORD=${DB_PASSWORD}
+        - POSTGRES_HOST=${POSTGRES_HOST}
+        - POSTGRES_USER=${DATABASE_USER}
+        - POSTGRES_PASS=${DATABASE_PASSWORD}
+        - POSTGRES_ADMIN_DB=${ADMIN_DB_NAME}
+        - POSTGRES_SYNC=false
+        - POSTGRES_PORT=${POSTGRES_PORT}
+        - APP_PORT=4000
+        - JWT_ADMIN_ACCESS_TOKEN_EXPIRATION_TIME=${JWT_ADMIN_ACCESS_TOKEN_EXPIRATION_TIME}
+        - JWT_ADMIN_ACCESS_TOKEN_SECRET=${JWT_ADMIN_ACCESS_TOKEN_SECRET}
+        - JWT_ADMIN_REFRESH_TOKEN_SECRET=${JWT_ADMIN_REFRESH_TOKEN_SECRET}
+        - JWT_ADMIN_REFRESH_TOKEN_EXPIRATION_TIME=${JWT_ADMIN_REFRESH_TOKEN_EXPIRATION_TIME}
+        - REDIS_HOST=redis-server
+        - REDIS_PORT=6379
+      ports: 
+        - "4000:4000" # expose-to-the-world : only-in-the-docker
+      container_name: admin-micro-service-app
+      depends_on: 
+        - db
+        # - redis-server
+      volumes: 
+        - ./admin-service:/app
+        - /app/node_modules
+      # networks: 
+      #   - redis-net
+    pgadmin:
+      image: dpage/pgadmin4
+      restart: always
+      container_name: nest-micro-service-pgadmin4
+      environment: 
+        - PGADMIN_DEFAULT_EMAIL=${PGADMIN_DEFAULT_EMAIL}
+        - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_DEFAULT_PASSWORD}
+        - PGADMIN_LISTEN_PORT=${PGADMIN_LISTEN_PORT}
+      ports: 
+        - "8080:80"
+      volumes: 
+        - ./pgadmin-data:/var/lib/pgadmin
+      depends_on: 
+        - db
+      # networks: 
+      #   - redis-net
+# networks: 
+#   redis-net: null
+volumes:
+  pgdata:
+  pgadmin-data:
+  redis-data:
