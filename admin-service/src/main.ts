@@ -2,7 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import bodyParser from 'body-parser';
+import * as bodyParser from 'body-parser';
 import { AppModule } from './app.module';
 
 const microserviceOptions: MicroserviceOptions = { // Redis communication
@@ -21,10 +21,6 @@ async function bootstrap() {
 
   app.setGlobalPrefix('api');
   console.log('admin service running on: ', port);
-  app.enableCors();
-  // app.use(bodyParser.json({limit: '1mb'}))
-  // app.use(bodyParser.urlencoded({ limit:'1mb', extended: true }))
-  // app.use(bodyParser.text({type: 'text/html'}))
 
   const options = new DocumentBuilder()
     .addBearerAuth()
@@ -36,12 +32,21 @@ async function bootstrap() {
     
   const document = SwaggerModule.createDocument(app, options);
   SwaggerModule.setup('api', app, document);
+
+  app.enableCors();
+
+  app.use(bodyParser.json({limit: '1mb'}));
+  app.use(bodyParser.urlencoded({limit: '1mb', extended: true }));
+  app.use(bodyParser.text({type: 'text/html'}));
   
   await app.listen(port);
 
-  // const app = await NestFactory.createMicroservice<MicroserviceOptions>(AppModule, microserviceOptions); // <MicroserviceOptions>
-  // app.listen(() => {
-  //   console.log('admin micro service is listening');
-  // });
+  /*
+    Use only as micro service
+    const app = await NestFactory.createMicroservice<MicroserviceOptions>(AppModule, microserviceOptions);
+    app.listen(() => {
+      console.log('admin micro service is listening');
+    });
+  */
 }
 bootstrap();
