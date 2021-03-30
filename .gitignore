@@ -16,6 +16,10 @@
 !/admin-service/src/migration/.gitkeep
 !/client-service/src/migration/.gitkeep
 
+# package-lock.json file
+/admin-service/src/package-lock.json
+/client-service/src/package-lock.json
+
 # Logs
 logs
 *.log
