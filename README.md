@@ -12,6 +12,7 @@ Simple todo application built in NestJs Micro-service & Dockerize environment
 * PGadmin4
 * JWT
 * Docker
+* Redis
 
 ## Services
 * admin-service
