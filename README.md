@@ -22,6 +22,10 @@ Simple todo application built in NestJs Micro-service & Dockerize environment
 * pgadmin
 
 # Running the app on docker
+## Create DB using docker container
+```bash
+$ docker-compose exec db createdb DB_NAME -U postgres
+```
 ## Docker build & start
 ```bash
 # docker env build
