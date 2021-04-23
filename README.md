@@ -19,6 +19,7 @@ Simple todo application built in NestJs Micro-service & Dockerize environment
 * client-service
 * redis-server
 * db
+* pgadmin
 
 # Running the app on docker
 ## Docker build & start
